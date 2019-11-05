@@ -29,17 +29,20 @@ def gen_page_likes(ocean_score, page_scores, n):
     m = min(n, len(page_scores))
     cov = np.identity(5)
     page_likes = []
-    for _ in range(m):
+    # TODO this might be a problem we need to solve
+    # To avoid repeated page likes, I implemented it like this. 
+    #   Deleting things from the page_scores list is problematic because it changes the indicies
+    #   This might also be problematic because it might loop a lot trying to get pages that are far from the person's score (for example if n is the same length as page_scores)
+    while len(page_likes) < m:
         draw  = np.random.multivariate_normal(ocean_score, cov, 1)
         #take the norm between the draw and every page and then select
         #the index of the smallest distance
         closest_page_idx = np.argmin(
                 LA.norm(draw - page_scores, ord=2, axis = 1)
         )
-        page_likes.append(closest_page_idx)
-        #remove page to avoid duplicate likes
-        # TODO TODO this is a problem because removing the page changes the indexes of the other pages after it, so you can get the same index multiple times
-        page_scores = np.delete(page_scores, closest_page_idx, 0)
+        # avoid duplicate likes
+        if closest_page_idx not in page_likes:
+            page_likes.append(closest_page_idx)
         
     return page_likes
 
@@ -50,7 +53,7 @@ def gen_posts(ocean_score, n):
     # TODO what the heck should the covariance matrix be?
     cov = np.identity(5)
     posts = []
-    for i in range(n):
+    for _ in range(n):
         draw = np.random.multivariate_normal(ocean_score, cov).T
         # print(draw)
         max_score = max(draw.min(), draw.max(), key=abs)
@@ -64,16 +67,24 @@ def gen_posts(ocean_score, n):
                 draw[j] = 1.0 * np.sign(max_score)
         # print(draw)
         posts.append(draw)
+    return np.array(posts)
 
-# gen_posts(gen_ocean_score(), 5)
+posts = gen_posts(gen_ocean_score(), 5)
+print(posts)
+# TODO perhaps this format will be better for posts to return? 
+#   Although maybe it loses some information (ex 1 + -1 = 0 but contains different info from 0)
+print(np.sum(posts, axis=0))
 
 page_scores = []
 for i in range(5):
     page_scores.append(gen_ocean_score())
 page_scores = np.array(page_scores)
 
-# print(page_scores)
 person = gen_ocean_score()
-# print(person)
 result = gen_page_likes(person, page_scores, 3)
 print(result)
+
+# TODO to check that this really works, we need to print/save the 
+#   draws from the multivariate and verify that these page scores were closest...
+for index in result:
+    print(page_scores[index])
