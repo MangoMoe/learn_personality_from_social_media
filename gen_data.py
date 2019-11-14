@@ -44,7 +44,11 @@ def gen_page_likes(ocean_score, page_scores, n):
     for i in range(ocean_score.shape[0]):
         page_likes.append([])
         while len(page_likes[i]) < m:
-            draw  = np.random.multivariate_normal(ocean_score[i], cov, 1)[0]
+            # 30% chance that the person picks a totally random page
+            if np.random.uniform() < 0.3:
+                draw = np.random.uniform(-1.0, 1.0, (1,5))
+            else:
+                draw  = np.random.multivariate_normal(ocean_score[i], cov, 1)[0]
             #take the norm between the draw and every page and then select
             #the index of the smallest distance
             closest_page_idx = np.argmin(
