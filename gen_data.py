@@ -8,7 +8,7 @@ index_to_traits = {0: "openness", 1: "conscientiousness", 2: "extraversion", 3: 
 
 # generates 5 ocean scores between -1 and 1
 # the order of the scores are [openness, Conscientiousness, extraversion, agreeableness, neuroticism]
-# TODO make this take in as a parameter how many to generate
+# TODO find probabilities of different ocean scores even being generated (i.e. are open people more common than non open people, etc.)
 def gen_ocean_score(n=None):
     # TODO should this be a uniform distribution or like a normal distribution with a mean of 0?
     if n is None:
