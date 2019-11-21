@@ -58,19 +58,41 @@ for i, like in enumerate(unknown_likes):
     estimate = np.zeros(5)
     # TODO figure out why you are getting a 0 in the denominator (it has something to do with the unknown person having the same likes as the known person)
     for j, dist in enumerate(dists):
-        print("{} / {} = {}".format(dist, np.sum(dists), dist / np.sum(dists)))
-        print(known_likes[j])
-        print(unknown_likes[i])
+        # print("{} / {} = {}".format(dist, np.sum(dists), dist / np.sum(dists)))
+        # print(known_likes[j])
+        # print(unknown_likes[i])
+        # TODO figure out what to return if this happens
+        if np.sum(dists) == 0:
+            estimate += known_people[j] * 1
+        else:
         estimate += known_people[j] * (dist / np.sum(dists))
     # see how close it is to the actual one
     # print("Guess vs actual value")
     # print(estimate)
     # print(unknown_people[i])
     # print("one and two norms of error")
-    # print(np.linalg.norm(estimate - unknown_people, ord=1))
-    # print(np.linalg.norm(estimate - unknown_people, ord=2))
+    # print(np.linalg.norm(estimate - unknown_people[i], ord=1))
+    # print(np.linalg.norm(estimate - unknown_people[i], ord=2))
     one_norm_total += np.linalg.norm(estimate - unknown_people[i], ord=1)
     two_norm_total += np.linalg.norm(estimate - unknown_people[i], ord=2)
 
 print("Average one norm: {}".format(one_norm_total / y))
 print("Average two norm: {}".format(two_norm_total / y))
+print("-----------------------------------------------------")
+
+# Now to try just uniform random guessing
+two_norm_total = 0
+one_norm_total = 0
+for i, like in enumerate(unknown_likes):
+    baseline_estimate = gd.gen_ocean_score()[0]
+    # print("Guess vs actual value")
+    # print(baseline_estimate)
+    # print(unknown_people[i])
+    # print("one and two norms of error")
+    # print(np.linalg.norm(estimate - unknown_people[i], ord=1))
+    # print(np.linalg.norm(estimate - unknown_people[i], ord=2))
+    one_norm_total += np.linalg.norm(baseline_estimate - unknown_people[i], ord=1)
+    two_norm_total += np.linalg.norm(baseline_estimate - unknown_people[i], ord=2)
+
+print("Average baseline one norm: {}".format(one_norm_total / y))
+print("Average baseline two norm: {}".format(two_norm_total / y))
