@@ -3,13 +3,16 @@ import numpy as np
 
 #CONSTS
 #######
-M = 30
+
+#amount of pages
+M = 40
 PAGE_SCORES = gen_ocean_score(M)
-PAGE_LIKE_COUNT = 10
+#numher of pages each person will like
+PAGE_LIKE_COUNT = 5
 
 #training Data
 ##############
-n_train = 1000
+n_train = 3000
 train_people_scores = gen_ocean_score(n_train)
 likes_train = np.zeros((n_train, 5))
 train_people_likes = [gen_page_likes(train_people_scores[i], PAGE_SCORES, PAGE_LIKE_COUNT) for i in range(n_train)]
