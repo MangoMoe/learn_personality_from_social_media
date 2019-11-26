@@ -3,16 +3,16 @@ import numpy as np
 
 # generate p pages
 
-p = 10
+p = 1000
 print("Number of pages: {}".format(p))
 pages = gd.gen_ocean_score(p)
 
 # generate x people who's scores are known
-x = 1
+x = 1000
 print("Number of known scores: {}".format(x))
 known_people = gd.gen_ocean_score(x)
 # TODO should we do the same thing with other functions allowing it to return a multidimensional array?
-num_likes = 5
+num_likes = 10
 print("Number of likes per person: {}".format(num_likes))
 known_likes = gd.gen_page_likes(known_people, pages, num_likes)
 known_likes_ones = []
@@ -24,7 +24,7 @@ for like in known_likes:
 known_likes_ones = np.array(known_likes_ones)
 
 # generate y unknown people
-y = 100
+y = 10
 print("Number of unknown scores: {}".format(y))
 unknown_people = gd.gen_ocean_score(y)
 unknown_likes = gd.gen_page_likes(unknown_people, pages, num_likes)
@@ -38,6 +38,7 @@ unknown_likes = gd.gen_page_likes(unknown_people, pages, num_likes)
 
 # now try to cluster a person
 #   first idea: just average of known people's scores weighted by their distance from those people's page likes
+# AWESOME idea: use known people to intuit parameters for a multivariate gaussian for each page and use likelihood that the unknown person with a certain score fit that page to fit the parameters or do gradient descent or something.
 #   Second idea: just cluster them, and then take some sort of distance metric from clusters to figure out score probably...
 #   third idea: try to generate our own page likes for a person and use some sort of gradient descent or nonlinear regression
 #   fourth idea: maximum likelihood of gaussian that produced that page like combo??? is that legal? model can't know page ocean scores
@@ -65,7 +66,7 @@ for i, like in enumerate(unknown_likes):
         if np.sum(dists) == 0:
             estimate += known_people[j] * 1
         else:
-        estimate += known_people[j] * (dist / np.sum(dists))
+            estimate += known_people[j] * (dist / np.sum(dists))
     # see how close it is to the actual one
     # print("Guess vs actual value")
     # print(estimate)
@@ -76,12 +77,12 @@ for i, like in enumerate(unknown_likes):
     one_norm_total += np.linalg.norm(estimate - unknown_people[i], ord=1)
     two_norm_total += np.linalg.norm(estimate - unknown_people[i], ord=2)
 
-print("Average one norm: {}".format(one_norm_total / y))
+# print("Average one norm: {}".format(one_norm_total / y))
 print("Average two norm: {}".format(two_norm_total / y))
 print("-----------------------------------------------------")
 
 # Now to try just uniform random guessing
-two_norm_total = 0
+baseline_two_norm_total = 0
 one_norm_total = 0
 for i, like in enumerate(unknown_likes):
     baseline_estimate = gd.gen_ocean_score()[0]
@@ -92,7 +93,9 @@ for i, like in enumerate(unknown_likes):
     # print(np.linalg.norm(estimate - unknown_people[i], ord=1))
     # print(np.linalg.norm(estimate - unknown_people[i], ord=2))
     one_norm_total += np.linalg.norm(baseline_estimate - unknown_people[i], ord=1)
-    two_norm_total += np.linalg.norm(baseline_estimate - unknown_people[i], ord=2)
+    baseline_two_norm_total += np.linalg.norm(baseline_estimate - unknown_people[i], ord=2)
 
-print("Average baseline one norm: {}".format(one_norm_total / y))
-print("Average baseline two norm: {}".format(two_norm_total / y))
+# print("Average baseline one norm: {}".format(one_norm_total / y))
+print("Average baseline two norm: {}".format(baseline_two_norm_total / y))
+baseline_two_norm_total - two_norm_total / baseline_two_norm_total
+print("ratio: {}".format( baseline_two_norm_total - two_norm_total / baseline_two_norm_total))
