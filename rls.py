@@ -22,8 +22,6 @@ pages = gd.gen_ocean_score(num_pages)
 # set up variables
 #   Since most of these have a time subscript but we only need the latest one so we don't need to store all the others
 m = 10 # window
-d = []
-# f = np.ones((5,m))
 
 # non transpose version
 # q = np.zeros((m,5)) # q[t]
@@ -34,7 +32,6 @@ delta = 0.00001
 # P = (1/delta) * np.identity(m) # P[t - 1]
 P = (1/delta) * np.identity(5) # P[t - 1]
 h = np.zeros((1,5)) # initialize means to zero
-# t = 0 # just for funzies so we can track
 
 # %%
 for t in range(1,15): # TODO I'm not sure this is right
@@ -50,6 +47,7 @@ for t in range(1,15): # TODO I'm not sure this is right
     # else:
     #     # TODO will this slow things down? Heck does generating a new ones matrix slow things down?
     #     q = np.ones((m,5))
+
     # transpose version
     if t < m:
         for i in range(t,-1,-1):
@@ -59,26 +57,10 @@ for t in range(1,15): # TODO I'm not sure this is right
         # TODO will this slow things down? Heck does generating a new ones matrix slow things down?
         q = np.ones((5,m))
 
-
-    # print("t: {}".format(t))
-    # print(q)
-    # print(P.shape)
-    # print(q.shape)
-    # print((P@q).shape)
-    # print((q.T@P).shape)
-    # print((q.T@P@q).shape)
-    # print(np.identity(q.shape[1]) + q.T@P@q)
     # TODO find a more efficient way to do this
     # TODO should this be 1 or identity? well 1 gives a singular matrix
     # TODO I'm not sure which transposition of the initial q is correct
-    # k = (P@q)@np.linalg.inv(np.identity(q.shape[1]) + q.T@P@q)
     k = (P@q)@np.linalg.inv(np.identity(q.shape[1]) + q.T@P@q) # TODO understand this better
-    # print(q.T.shape)
-    # print(h.shape)
-    # TODO I'm not entirely sure this is right... shouldn't the output be
-    #   TODO TODO see below silly
-    # print((q@h).shape)
-    # print((q.T@h.T).shape)
     # TODO this will have to be generated carefully, its not an entirely matrix operation
     # generate a value for d, then use a multivariate gaussian and the other
     # pick page
@@ -88,11 +70,10 @@ for t in range(1,15): # TODO I'm not sure this is right
     # then do gaussian with 0 mean
     cov = np.identity(5)
     # TODO maybe just use h as the means
-    # print(h[0])
     estimate = np.random.multivariate_normal(h[0], cov, 1)[0]
-    # print(estimate)
-    # then add q.T@h?
+    # TODO so like... this error is different.... than the algorithm... hopefully it works
     e = d - estimate
+    # TODO TODO if all else fails, you could just use 5 different RLS algorithms to find each mean
     print(e)
 
 # %%
