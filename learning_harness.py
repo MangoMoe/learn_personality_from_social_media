@@ -98,4 +98,4 @@ for i, like in enumerate(unknown_likes):
 # print("Average baseline one norm: {}".format(one_norm_total / y))
 print("Average baseline two norm: {}".format(baseline_two_norm_total / y))
 baseline_two_norm_total - two_norm_total / baseline_two_norm_total
-print("ratio: {}".format( baseline_two_norm_total - two_norm_total / baseline_two_norm_total))
+print("ratio: {}".format( (baseline_two_norm_total - two_norm_total) / baseline_two_norm_total))
