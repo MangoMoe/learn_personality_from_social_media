@@ -59,14 +59,15 @@ def r(x, unkown_likes):
 pred_test_people_scores = np.zeros((n_test, 5))
 for i in range(n_test):
     page_likes, = test_people_likes[i]
-    page_likes_matrix = np.zeros((len(page_likes), 5))
-    for j, page_idx in enumerate(page_likes):
-        page_likes_matrix[j, :] = pred_page_scores[page_idx]
+    # page_likes_matrix = np.zeros((len(page_likes), 5))
+    # for j, page_idx in enumerate(page_likes):
+    #     page_likes_matrix[j, :] = pred_page_scores[page_idx]
 
     # pred_test_people_scores[i, :] = np.mean(page_likes_matrix, axis=0)
 
-    pred_score = np.mean(page_likes_matrix, axis=0)
-    final_pred, msg = leastsq(r, pred_score,args=(page_likes))
+    # pred_score = np.mean(page_likes_matrix, axis=0)
+    # final_pred, msg = leastsq(r, pred_score(), args=(page_likes))
+    final_pred, msg = leastsq(r, gen_ocean_score(), args=(page_likes))
     pred_test_people_scores[i, :] = final_pred
     
 # print("Using just mean of predicted page scores")
