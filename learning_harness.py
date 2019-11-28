@@ -3,16 +3,16 @@ import numpy as np
 
 # generate p pages
 
-p = 1000
+p = 40
 print("Number of pages: {}".format(p))
 pages = gd.gen_ocean_score(p)
 
 # generate x people who's scores are known
-x = 1000
+x = 3000
 print("Number of known scores: {}".format(x))
 known_people = gd.gen_ocean_score(x)
 # TODO should we do the same thing with other functions allowing it to return a multidimensional array?
-num_likes = 10
+num_likes = 5
 print("Number of likes per person: {}".format(num_likes))
 known_likes = gd.gen_page_likes(known_people, pages, num_likes)
 known_likes_ones = []
@@ -24,7 +24,7 @@ for like in known_likes:
 known_likes_ones = np.array(known_likes_ones)
 
 # generate y unknown people
-y = 10
+y = 200
 print("Number of unknown scores: {}".format(y))
 unknown_people = gd.gen_ocean_score(y)
 unknown_likes = gd.gen_page_likes(unknown_people, pages, num_likes)
