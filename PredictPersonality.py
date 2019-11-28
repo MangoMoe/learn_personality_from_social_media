@@ -1,5 +1,6 @@
 from gen_data import *
 import numpy as np
+from scipy.optimize import leastsq
 
 #CONSTS
 #######
@@ -42,6 +43,18 @@ for i in range(n_train):
 
 pred_page_scores = [np.mean(person_scores_of_liked_pages[i], axis=0) for i in range(M)]
 
+# TODO okay so we are going to try the information geometry methods
+
+# Not sure what r stands for (maybe error), but I think I know what it does
+#   ys can be the likes vector for an unknown person, f can be the generated page likes for the given parameters
+#   TODO I think 0.01 is the variance but like I'm not exactly sure how to do that for a freaking matrix (especially since the "noise" is uniform random...)
+#       Variance for a uniform random distribution on (a,b) is (b-a)^2 / 12, but do we have to factor in the gaussian variance as well? Well since its the identity, and I think you just invert the covariance, it wouldn't change the answer
+#   lstsq takes in a vector to fit
+def r(x, unkown_likes):
+    # print(x.shape)
+    # print(((unkown_likes - gen_page_likes(x, PAGE_SCORES, PAGE_LIKE_COUNT))/3.0).reshape(5).shape)
+    return ((unkown_likes - gen_page_likes(x, PAGE_SCORES, PAGE_LIKE_COUNT))/3.0).reshape(5)
+
 #Predict person scores by taking the average of all the *predicted* page scores they liked
 pred_test_people_scores = np.zeros((n_test, 5))
 for i in range(n_test):
@@ -49,7 +62,15 @@ for i in range(n_test):
     page_likes_matrix = np.zeros((len(page_likes), 5))
     for j, page_idx in enumerate(page_likes):
         page_likes_matrix[j, :] = pred_page_scores[page_idx]
-    pred_test_people_scores[i, :] = np.mean(page_likes_matrix, axis=0)
+
+    # pred_test_people_scores[i, :] = np.mean(page_likes_matrix, axis=0)
+
+    pred_score = np.mean(page_likes_matrix, axis=0)
+    final_pred, msg = leastsq(r, pred_score,args=(page_likes))
+    pred_test_people_scores[i, :] = final_pred
+    
+# print("Using just mean of predicted page scores")
+print("Using leastsq to try to fit better")
     
 #test model
 ###########
