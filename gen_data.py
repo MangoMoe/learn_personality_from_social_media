@@ -18,7 +18,7 @@ def gen_ocean_score(n=None):
         scores = np.random.uniform(-1.0, 1.0, (n,5))
     return scores
 
-def gen_page_likes(ocean_score, page_scores, n):
+def gen_page_likes(ocean_score, page_scores, n, include_noise=True):
     """Each facebook page should have a personality score.
     A page like is generated from taking a draw
     from a normal distribution centered around a persons
@@ -45,7 +45,7 @@ def gen_page_likes(ocean_score, page_scores, n):
         page_likes.append([])
         while len(page_likes[i]) < m:
             # 30% chance that the person picks a totally random page
-            if np.random.uniform() < 0.3:
+            if np.random.uniform() < 0.3 and include_noise:
                 draw = np.random.uniform(-1.0, 1.0, (1,5))
             else:
                 draw  = np.random.multivariate_normal(ocean_score[i], cov, 1)[0]
