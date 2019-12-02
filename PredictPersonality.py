@@ -89,7 +89,7 @@ def method_2(train_people_likes, train_people_scores, test_people_likes, M):
 
 def method_3(train_people_likes, train_people_scores, test_people_likes, M):
     """make a person a vector of all the pages they liked and didnt like and run 
-    knn"""
+    KNN"""
     people_train, people_test, classes = discritize_data(train_people_likes, test_people_likes, 8, M)
     
     #find closest class for each person in training data
@@ -99,13 +99,13 @@ def method_3(train_people_likes, train_people_scores, test_people_likes, M):
             np.linalg.norm(classes - score, axis=1)
         ))
 
-    #build model
+    #create model
     knn = KNeighborsClassifier(n_neighbors=5, metric='euclidean')
 
-    #fit
+    #train model
     knn.fit(people_train, train_people_scores_disc)
 
-    #test
+    #predict
     test_people_scores_disc = classes[knn.predict(people_test)]
     return test_people_scores_disc
 
@@ -137,7 +137,7 @@ def test_methods():
 
     predictions = [
         [method_1(train_people_scores, train_people_likes, test_people_likes, M, n_train, n_test), "Mean to Mean"],
-        [method_2(train_people_likes, train_people_scores, test_people_likes, M), "Decision Tree"]
+        [method_2(train_people_likes, train_people_scores, test_people_likes, M), "Decision Tree"],
         [method_3(train_people_likes, train_people_scores, test_people_likes, M), "KNN"]
         ]
 
