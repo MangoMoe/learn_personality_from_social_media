@@ -99,12 +99,17 @@ def method_3(train_people_likes, train_people_scores, test_people_likes, M):
             np.linalg.norm(classes - score, axis=1)
         ))
 
+    #build model
     knn = KNeighborsClassifier(n_neighbors=5, metric='euclidean')
-    knn.fit(people_train, train_people_scores_disc)
-    y_pred = classes[knn.predict(people_test)]
-    return y_pred
 
-# def method_4():
+    #fit
+    knn.fit(people_train, train_people_scores_disc)
+
+    #test
+    test_people_scores_disc = classes[knn.predict(people_test)]
+    return test_people_scores_disc
+
+def method_4():
 
 
 def test_methods():
