@@ -109,7 +109,7 @@ def method_3(train_people_likes, train_people_scores, test_people_likes, M):
     test_people_scores_disc = classes[knn.predict(people_test)]
     return test_people_scores_disc
 
-def method_4():
+# def method_4():
 
 
 def test_methods():
