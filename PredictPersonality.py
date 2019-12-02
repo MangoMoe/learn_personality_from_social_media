@@ -89,7 +89,7 @@ def method_2(train_people_likes, train_people_scores, test_people_likes, M):
 
 def method_3(train_people_likes, train_people_scores, test_people_likes, M):
     """make a person a vector of all the pages they liked and didnt like and run 
-    decision tree"""
+    knn"""
     people_train, people_test, classes = discritize_data(train_people_likes, test_people_likes, 8, M)
     
     #find closest class for each person in training data
