@@ -14,14 +14,14 @@ PAGE_LIKE_COUNT = 5
 
 #training Data
 ##############
-n_train = 300
+n_train = 3000
 train_people_scores = gen_ocean_score(n_train)
 likes_train = np.zeros((n_train, 5))
 train_people_likes = [gen_page_likes(train_people_scores[i], PAGE_SCORES, PAGE_LIKE_COUNT) for i in range(n_train)]
 
 #testing data
 #############
-n_test = 500
+n_test = 200
 test_people_scores = gen_ocean_score(n_test)
 test_people_likes = [gen_page_likes(test_people_scores[i], PAGE_SCORES, PAGE_LIKE_COUNT) for i in range(n_test)]
 
@@ -50,6 +50,10 @@ pred_page_scores = [np.mean(person_scores_of_liked_pages[i], axis=0) for i in ra
 #   Variance for a uniform random distribution on (a,b) is (b-a)^2 / 12, but do we have to factor in the gaussian variance as well? Well since its the identity, and I think you just invert the covariance, it wouldn't change the answer
 #   lstsq takes in a vector to fit
 def r(x, unkown_likes):
+    # TODO penalize really bad x values somehow
+    # Attempting to penalize crazy x values
+    if np.max(np.abs(x)) > 1.0:
+        return np.ones(x.shape) * np.exp(np.max(np.abs(x)))
     unkown_like_ones = np.zeros(PAGE_SCORES.shape[0])
     unkown_like_ones[unkown_likes] = 1
     # Try some monte carlo
