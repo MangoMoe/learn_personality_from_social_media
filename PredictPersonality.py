@@ -109,7 +109,11 @@ def method_3(train_people_likes, train_people_scores, test_people_likes, M):
     test_people_scores_disc = classes[knn.predict(people_test)]
     return test_people_scores_disc
 
-# def method_4():
+def baseline(train_people_likes, train_people_scores, test_people_likes, M):
+    estimates = []
+    for _ in test_people_likes:
+        estimates.append(gen_ocean_score()[0])
+    return np.array(estimates)
 
 
 def test_methods():
@@ -125,6 +129,8 @@ def test_methods():
     #training Data
     ##############
     n_train = 10000
+    # n_train = 3000
+    # n_train = 100
     train_people_scores = gen_ocean_score(n_train)
     likes_train = np.zeros((n_train, 5))
     train_people_likes = [gen_page_likes(train_people_scores[i], PAGE_SCORES, PAGE_LIKE_COUNT) for i in range(n_train)]
@@ -136,9 +142,10 @@ def test_methods():
     test_people_likes = [gen_page_likes(test_people_scores[i], PAGE_SCORES, PAGE_LIKE_COUNT) for i in range(n_test)]
 
     predictions = [
+        [baseline(train_people_likes, train_people_scores, test_people_likes, M), "Baseline (Random Guessing)"],
         [method_1(train_people_scores, train_people_likes, test_people_likes, M, n_train, n_test), "Mean to Mean"],
         [method_2(train_people_likes, train_people_scores, test_people_likes, M), "Decision Tree"],
-        [method_3(train_people_likes, train_people_scores, test_people_likes, M), "KNN"]
+        [method_3(train_people_likes, train_people_scores, test_people_likes, M), "KNN"],
         ]
 
     for p, name in predictions:
