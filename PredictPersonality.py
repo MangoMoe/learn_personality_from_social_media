@@ -148,13 +148,20 @@ def test_methods():
         [method_3(train_people_likes, train_people_scores, test_people_likes, M), "KNN"],
         ]
 
+    means = []
     for p, name in predictions:
         #test models
         ###########
+        means.append(np.mean( np.linalg.norm(p - test_people_scores, axis=1)))
         print(f"{name}: MSE = ",
                 np.mean(
                     np.linalg.norm(p - test_people_scores, axis=1)
                 )
             )
+    return np.array(means).reshape(1,len(predictions))
 
-test_methods()
+means_of_thing = test_methods()
+for i in range(9):
+    means_of_thing = np.vstack([means_of_thing, test_methods()])
+print(means_of_thing.shape)
+print(np.mean(means_of_thing, axis = 0))
