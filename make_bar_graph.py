@@ -11,7 +11,7 @@ ypos = np.arange(len(methods))
 
 pylab.figure
 pylab.bar(ypos, data, align='center', alpha=0.5, color = ["red", "blue", "green", "orange", "purple", "teal"])
-pylab.xticks(ypos, methods)
-pylab.ylabel('MSE (averaged over 10 runs)')
-pylab.title('Modeling Methods')
+pylab.xticks(ypos, methods, fontsize=20)
+pylab.ylabel('MSE\n(averaged over 10 runs)', fontsize=20)
+pylab.title('Modeling Methods', fontsize=30)
 pylab.show()
