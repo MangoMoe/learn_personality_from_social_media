@@ -8,6 +8,12 @@ import gen_data as gd
 #   Have your f be a gaussian generating scores with same variance (for now) as target distribution
 #   Coefficients are the means?
 
+# TODO here we go, the above thing (my original plan) might have been trivial. Try instead making a matrix of all the people's likes we know and use that as your recursive thing. A linear combination of them is the output
+# TODO or maybe try to estimate the score of a page from more random people liking it?
+# gork snork just figure out a non-trivial problem? Or maybe just adding random noise is non-trivial?
+
+# TODO is this even a thing we can solve with recursive least squares?
+
 # %%
 # Create actual plant
 plant = gd.gen_ocean_score()
