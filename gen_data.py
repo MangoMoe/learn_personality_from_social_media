@@ -18,7 +18,7 @@ def gen_ocean_score(n=None):
         scores = np.random.uniform(-1.0, 1.0, (n,5))
     return scores
 
-def gen_page_likes(ocean_score, page_scores, n):
+def gen_page_likes(ocean_score, page_scores, n, include_noise=True):
     """Each facebook page should have a personality score.
     A page like is generated from taking a draw
     from a normal distribution centered around a persons
@@ -41,18 +41,51 @@ def gen_page_likes(ocean_score, page_scores, n):
     #   Deleting things from the page_scores list is problematic because it changes the indicies
     #   This might also be problematic because it might loop a lot trying to get pages that are far from the person's score (for example if n is the same length as page_scores)
     # print(ocean_score.shape[0])
+    rem_include_noise = include_noise
     for i in range(ocean_score.shape[0]):
+        include_noise = rem_include_noise
         page_likes.append([])
+        iter_count = 0
+        page_scores_temp = page_scores[:]
+        unused_indexes = [i for i in range(page_scores.shape[0])]
         while len(page_likes[i]) < m:
-            draw  = np.random.multivariate_normal(ocean_score[i], cov, 1)[0]
+            # 30% chance that the person picks a totally random page
+            if np.random.uniform() < 0.3 and include_noise:
+                draw = np.random.uniform(-1.0, 1.0, (1,5))
+            else:
+                draw  = np.random.multivariate_normal(ocean_score[i], cov, 1)[0]
             #take the norm between the draw and every page and then select
             #the index of the smallest distance
             closest_page_idx = np.argmin(
-                    LA.norm(draw - page_scores, ord=2, axis = 1)
+                    # LA.norm(draw - page_scores, ord=2, axis = 1)
+                    LA.norm(draw - page_scores_temp, ord=2, axis = 1)
             )
             # avoid duplicate likes
             if closest_page_idx not in page_likes[i]:
                 page_likes[i].append(closest_page_idx)
+                # TODO this might fix the problems we've been having
+                unused_indexes.remove(closest_page_idx)
+                page_scores_temp = page_scores[unused_indexes]
+            # TODO the problem fixed by the following code is probably caused because if there is no noise, we can get stuck
+            # TODO new idea, return something that will cause high residual so it won't make the means so freaking extreme
+            # TODO another idea, if you get stuck for too long, just add the noise back in for this iteration only
+            iter_count += 1
+            if iter_count > 1000 and not include_noise:
+                print("")
+                # print("Warning, generating page likes took too long, using random values")
+                # print("Warning, generating page likes took too long, liking nothing to penalize")
+                print("Warning, generating page likes took too long, adding random noise to likes")
+                print("Offending ocean score: {}".format(ocean_score[i]))
+                include_noise = True
+                # TODO the nature of the np arrays doesn't let me use an empty array here....
+                # page_likes[i] = [0,0,0,0,0]
+                # while len(page_likes[i]) < m:
+                #     # page_likes[i].append(len(page_likes))
+                #     num = (int)(np.random.uniform(0, page_scores.shape[0]))
+                #     if num not in page_likes[i]:
+                #         page_likes[i].append(num)
+                # break
+
             
     return np.array(page_likes)
 
