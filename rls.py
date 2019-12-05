@@ -11,7 +11,13 @@ from tqdm import tqdm
 # TODO document what you reused
 
 NUM_KNOWN_PEOPLE = 300
-NUM_PAGES = 400
+NUM_PAGES = 40
+LIKES_PER_PERSON = 10
+
+WINDOW = 30
+NUM_ITER = 500
+DATA_SIZE = NUM_PAGES
+# DATA_SIZE = 5
 pages = gd.gen_ocean_score(NUM_PAGES)
 # TODO merge other code into this so we have the updated page likes generation function probably...
 known_people = gd.gen_ocean_score(NUM_KNOWN_PEOPLE)
@@ -22,24 +28,24 @@ params = np.zeros((1, NUM_KNOWN_PEOPLE)).reshape((1,NUM_KNOWN_PEOPLE)).T
 def gen_likes_matricies(known_people, pages, unknown_person):
     # Return A matrix (well the additional part anyway) and the b vector (additional part)
     
-    # x person is cool
-    A = np.array([])
-    A = np.concatenate([pages[gd.gen_page_likes(person, pages, 1)].reshape(1,5) for person in known_people])
-    # for person in known_people:
-    #     person_like = gd.gen_page_likes(person, pages, 1)
-    #     liked_page_score = pages[person_like].reshape(1,5)
-    #     A = np.concatenate([A, person_like])
+    stuff = []
+    for person in known_people:
+        one_vec = np.zeros(pages.shape[0])
+        one_vec[gd.gen_page_likes(person, pages, LIKES_PER_PERSON)] = 1
+        stuff.append(one_vec.reshape(1, DATA_SIZE))
+
+    A = np.concatenate(stuff)
+    # A = np.concatenate([pages[gd.gen_page_likes(person, pages, LIKES_PER_PERSON)].reshape(LIKES_PER_PERSON,DATA_SIZE) for person in known_people])
     
-    b = pages[gd.gen_page_likes(unknown_person, pages, 1)].reshape(1,5)
+    b = np.zeros(pages.shape[0])
+    b[gd.gen_page_likes(unknown_person, pages, LIKES_PER_PERSON)] = 1
+    b = b.reshape(1,DATA_SIZE)
     return A.T, b.T
 
 A, b = gen_likes_matricies(known_people, pages, unknown_person)
 # new_A, new_b = gen_likes_matricies(known_people, pages, unknown_person)
 # A = np.vstack([ A, new_A ])
 # b = np.vstack([ b, new_b ])
-
-WINDOW = 100
-NUM_ITER = 1000
 
 # P = R^-1, R = A^H A
 # f is input signal, which is probably A or in other words, our stream of data from the other people
@@ -56,8 +62,8 @@ k = 0 # initial value for K is empty
 # P = (1/delta) * np.identity(5 * WINDOW)
 P = (1/delta) * np.identity(NUM_KNOWN_PEOPLE)
 h = params
-q_init = np.zeros((5 * WINDOW, NUM_KNOWN_PEOPLE))
-d_init = np.zeros((5 * WINDOW, 1))
+q_init = np.zeros((DATA_SIZE * WINDOW, NUM_KNOWN_PEOPLE))
+d_init = np.zeros((DATA_SIZE * WINDOW, 1))
 for t in tqdm(range(1,NUM_ITER+1)):
     A, b = gen_likes_matricies(known_people, pages, unknown_person)
     fs.append(A)
@@ -65,29 +71,36 @@ for t in tqdm(range(1,NUM_ITER+1)):
     if t < WINDOW + 1:
         q = np.zeros(q_init.shape)
         for i in range(t):
-            q[i *5: i*5+5,:] = fs[t - i]
+            q[i *DATA_SIZE: i*DATA_SIZE+DATA_SIZE,:] = fs[t - i]
         d = np.zeros(d_init.shape)
         for i in range(t):
-            d[i *5: i*5+5,:] = data[t - i]
+            d[i *DATA_SIZE: i*DATA_SIZE+DATA_SIZE,:] = data[t - i]
     else:
         q = np.vstack(fs[t:t - WINDOW + 1 - 1:-1])
         d = np.vstack(data[t:t - WINDOW + 1 - 1:-1])
     q = q.T # apparently this worked... TODO make sure this is the case
 
-    k = P@q@np.linalg.inv(np.identity(5 * WINDOW) + q.T@P@q) # TODO I used identity instead of one...
+    k = P@q@np.linalg.inv(np.identity(DATA_SIZE * WINDOW) + q.T@P@q) # TODO I used identity instead of one...
     P = P - k@q.T@P
     h = h + k@(d - q.T@h)
 
 # at the end, predict the score of the person by combining the other people's scores
 # 
+h = h / np.linalg.norm(h, ord=1)
+# h = h *  DATA_SIZE / 5
+# h = h * 2
 estimated_score = (known_people.T@h).T
 baseline = gd.gen_ocean_score()
-# print("End parameters: {}".format(h))
+
+print("End parameters: {}".format(h))
 print("Estimated person score: {}".format(estimated_score))
-print("Baseline person score: {}".format(baseline))
 print("Actual Person score: {}".format(unknown_person))
+# TODO TODO TODO compare to just mean of page scores for person likes
+#   even if it does work, its useful in other contexts where you are comparing people to see if they are similar
+# TODO try scaling answer to reduce error and figure out what optimal scaling is
 # print("Error: {}".format(estimated_score - unknown_person))
 print("Norm of error: {}".format(np.linalg.norm(estimated_score - unknown_person, ord=2)))
+# print("Baseline person score: {}".format(baseline))
 print("Norm of baseline error: {}".format(np.linalg.norm(baseline - unknown_person, ord=2)))
 
 
