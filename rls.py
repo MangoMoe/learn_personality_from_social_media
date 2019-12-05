@@ -10,7 +10,7 @@ from tqdm import tqdm
 #   just stack the ocean scores of the output pages (so basically the page ocean scores are known) vertically because the similarity is the same for the different ocean parameters of each person
 # TODO document what you reused
 
-NUM_KNOWN_PEOPLE = 30
+NUM_KNOWN_PEOPLE = 300
 NUM_PAGES = 400
 pages = gd.gen_ocean_score(NUM_PAGES)
 # TODO merge other code into this so we have the updated page likes generation function probably...
@@ -81,10 +81,14 @@ for t in tqdm(range(1,NUM_ITER+1)):
 # at the end, predict the score of the person by combining the other people's scores
 # 
 estimated_score = (known_people.T@h).T
-print("Estimated Person score: {}".format(estimated_score))
+baseline = gd.gen_ocean_score()
+# print("End parameters: {}".format(h))
+print("Estimated person score: {}".format(estimated_score))
+print("Baseline person score: {}".format(baseline))
 print("Actual Person score: {}".format(unknown_person))
-print("Error: {}".format(estimated_score - unknown_person))
+# print("Error: {}".format(estimated_score - unknown_person))
 print("Norm of error: {}".format(np.linalg.norm(estimated_score - unknown_person, ord=2)))
+print("Norm of baseline error: {}".format(np.linalg.norm(baseline - unknown_person, ord=2)))
 
 
 
