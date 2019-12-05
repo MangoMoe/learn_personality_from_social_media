@@ -22,9 +22,9 @@ def rls_fit(num_known_people, num_pages, likes_per_person, window, num_iter, hid
         DATA_SIZE = NUM_PAGES # use those one vectors composed of which pages they liked
     else:
         DATA_SIZE = 5 # length of an ocean score
-    print("Running RLS Algorithm.\n Number of known people is {},\n Number of pages is {},\n Likes per person is {},\n window size is {} sets of data,\n we are iterating {} times,\n and are we hiding the page scores? {}".format(
-        NUM_KNOWN_PEOPLE, NUM_PAGES, LIKES_PER_PERSON, WINDOW, NUM_ITER, "Yes" if hide_page_scores else "No"
-    ))
+    # print("\n\nRunning RLS Algorithm.\n Number of known people is {},\n Number of pages is {},\n Likes per person is {},\n window size is {} sets of data,\n we are iterating {} times,\n and are we hiding the page scores? {}".format(
+    #     NUM_KNOWN_PEOPLE, NUM_PAGES, LIKES_PER_PERSON, WINDOW, NUM_ITER, "Yes" if hide_page_scores else "No"
+    # ))
     pages = gd.gen_ocean_score(NUM_PAGES)
     known_people = gd.gen_ocean_score(NUM_KNOWN_PEOPLE)
     unknown_person = gd.gen_ocean_score()
@@ -67,7 +67,8 @@ def rls_fit(num_known_people, num_pages, likes_per_person, window, num_iter, hid
     h = params
     q_init = np.zeros((DATA_SIZE * WINDOW, NUM_KNOWN_PEOPLE))
     d_init = np.zeros((DATA_SIZE * WINDOW, 1))
-    for t in tqdm(range(1,NUM_ITER+1)):
+    # for t in tqdm(range(1,NUM_ITER+1)):
+    for t in range(1,NUM_ITER+1):
         A, b = gen_likes_matricies(known_people, pages, unknown_person, hide_page_scores)
         fs.append(A)
         data.append(b)
@@ -97,16 +98,187 @@ def rls_fit(num_known_people, num_pages, likes_per_person, window, num_iter, hid
     baseline = gd.gen_ocean_score()
 
     # print("End parameters: {}".format(h))
-    print("Estimated person score: {}".format(estimated_score))
-    print("Actual Person score: {}".format(unknown_person))
-    # TODO TODO TODO compare to just mean of page scores for person likes
-    #   even if it does work, its useful in other contexts where you are comparing people to see if they are similar
-    # print("Error: {}".format(estimated_score - unknown_person))
-    print("Norm of error: {}".format(np.linalg.norm(estimated_score - unknown_person, ord=2)))
-    # print("Baseline person score: {}".format(baseline))
-    print("Norm of baseline error: {}".format(np.linalg.norm(baseline - unknown_person, ord=2)))
+    # print("Estimated person score: {}".format(estimated_score))
+    # print("Actual Person score: {}".format(unknown_person))
+    # # TODO TODO TODO compare to just mean of page scores for person likes
+    # #   even if it does work, its useful in other contexts where you are comparing people to see if they are similar
+    # # print("Error: {}".format(estimated_score - unknown_person))
+    # print("Norm of error: {}".format(np.linalg.norm(estimated_score - unknown_person, ord=2)))
+    # # print("Baseline person score: {}".format(baseline))
+    # print("Norm of baseline error: {}".format(np.linalg.norm(baseline - unknown_person, ord=2)))
     return np.linalg.norm(estimated_score - unknown_person, ord=2)
 
-rls_fit(num_known_people = 300, num_pages = 40, likes_per_person = 10, window = 10, num_iter = 1000, hide_page_scores = False)
+AVG_AMOUNT = 10
+
+# Testing various amounts of known scores
+with open("page_scores_num_people.txt", "w") as f:
+    print("Beginning to test various values for known user scores")
+    num_known_peoples = [1, 10, 30, 100, 300, 500, 1000]
+    # num_known_peoples = [1, 10, 30, 100]
+    norms = []
+    for amount in num_known_peoples:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = amount, num_pages = 40, likes_per_person = 10, window = 10, num_iter = 500, hide_page_scores = False))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
 
 
+# Testing various amounts of known pages
+with open("page_scores_num_pages.txt", "w") as f:
+    print("Beginning to test various values for known pages")
+    num_pages = [1, 10, 30, 100, 200, 1000]
+    norms = []
+    for amount in num_pages:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = 100, num_pages = amount, likes_per_person = 10, window = 10, num_iter = 500, hide_page_scores = False))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
+
+# Testing various amounts of window sizes
+with open("page_scores_window.txt", "w") as f:
+    print("Beginning to test various values window size")
+    window_size = [1, 2, 5, 10, 30, 100]
+    norms = []
+    for amount in window_size:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = 100, num_pages = 40, likes_per_person = 10, window = amount, num_iter = 500, hide_page_scores = False))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
+
+# Testing various amounts of number of iterations
+with open("page_scores_num_iter.txt", "w") as f:
+    print("Beginning to test various values for number of iterations")
+    num_iter = [1, 10, 30, 100, 200, 500, 1000, 2000]
+    norms = []
+    for amount in num_iter:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = 100, num_pages = 40, likes_per_person = 10, window = 10, num_iter = amount, hide_page_scores = False))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
+
+# Testing various amounts of number of known people for unknown pages
+with open("no_scores_num_known_people.txt", "w") as f:
+    print("Beginning to test various values for number of known people with hidden page scores")
+    num_people = [1, 10, 30, 100, 300, 500, 1000]
+    norms = []
+    for amount in num_people:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = amount, num_pages = 40, likes_per_person = 10, window = 10, num_iter = 500, hide_page_scores = True))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
+
+# Testing various amounts of number of pages for unknown pages
+with open("no_scores_num_pages.txt", "w") as f:
+    print("Beginning to test various values for number of number of pages with hidden page scores")
+    num_pages = [1, 10, 30, 100, 200, 1000]
+    norms = []
+    for amount in num_pages:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = 100, num_pages = amount, likes_per_person = 10, window = 10, num_iter = 500, hide_page_scores = True))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
+
+# Testing various amounts of number of window size for unknown pages
+with open("no_scores_window_size.txt", "w") as f:
+    print("Beginning to test various values for window size with hidden page scores")
+    window_size = [1, 2, 5, 10, 30, 100]
+    norms = []
+    for amount in window_size:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = 100, num_pages = 40, likes_per_person = 10, window = amount, num_iter = 500, hide_page_scores = True))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
+
+# Testing various amounts of number of likes_per_person for unknown pages
+with open("no_scores_likes_per_person.txt", "w") as f:
+    print("Beginning to test various values for number of likes per person with hidden page scores")
+    num_likes = [1, 2, 5, 10, 20, 30 ]
+    norms = []
+    for amount in num_likes:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = 100, num_pages = 40, likes_per_person = amount, window = 10, num_iter = 500, hide_page_scores = True))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
+
+# Testing various amounts of number iterations for unknown pages
+with open("no_scores_num_iterations.txt", "w") as f:
+    print("Beginning to test various values for number of iterations with hidden page scores")
+    num_iter = [1, 10, 30, 100, 200, 500, 1000, 2000]
+    norms = []
+    for amount in num_iter:
+        runs = []
+        print("testing {} people for known values".format(amount))
+        for i in tqdm(range(AVG_AMOUNT)):
+            runs.append(rls_fit(num_known_people = 100, num_pages = 40, likes_per_person = 10, window = 10, num_iter = amount, hide_page_scores = True))
+        f.write(str(amount) + ", ")
+        runs = np.array(runs)
+        norms.append(np.mean(runs))
+
+    f.write("\n")
+    for norm in norms:
+        f.write(str(norm) + ", ")
+    print("finished testing that")
